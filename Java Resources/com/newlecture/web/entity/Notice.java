@@ -12,7 +12,7 @@ public class Notice {
 	private String content;
 	
 	public Notice() {
-		// TODO Auto-generated constructor stub
+		
 	}
 	
 	public Notice(int id, String title, Date regDate, String writerId, String hit) {

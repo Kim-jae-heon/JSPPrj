@@ -3,6 +3,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%> <!-- 출력을 위한 지시자 -->
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
 
@@ -152,11 +154,11 @@
 						<legend class="hidden">공지사항 검색 필드</legend>
 						<label class="hidden">검색분류</label>
 						<select name="f">
-							<option  value="title">제목</option>
-							<option  value="writerId">작성자</option>
+							<option ${(param.f == "title")? "selected" : ""} value="title">제목</option>
+							<option ${(param.f == "writer_id")? "selected":""} value="writer_id">작성자</option>
 						</select> 
 						<label class="hidden">검색어</label>
-						<input type="text" name="q" value=""/>
+						<input type="text" name="q" value="${param.q}"/>
 						<input class="btn btn-search" type="submit" value="검색" />
 					</fieldset>
 				</form>
@@ -184,10 +186,10 @@
 					<c:forEach var="n" items="${list}">
 						<tr>
 							<td>${n.id}</td>
-							<td class="title indent text-align-left"><a href="detail?id=${n.id}">${n.title}</a></td>
+							<td class="title indent text-align-left"><a href="detail?id=${n.id}">${n.title}</a><span>[${n.cmtCount}]</span></td>
 							<td>${n.writerId }</td>
 							<td>
-								${n.regDate }
+								<fmt:formatDate pattern="yyyy-MM-dd" value="${n.regDate }" />
 							</td>
 							<td>${n.hit }</td>
 						</tr>
@@ -197,15 +199,16 @@
 				</table>
 			</div>
 			
+			<c:set var="page" value="${(empty param.p)?1:param.p}" />
+			<c:set var="startNum" value="${page-(page-1)%5}" />
+			<c:set var="LastNum" value="${fn:substringBefore(Math.ceil(count/10),'.')}" />
+			
 			<div class="indexer margin-top align-right">
 				<h3 class="hidden">현재 페이지</h3>
-				<div><span class="text-orange text-strong">1</span> / 1 pages</div>
+				<div><span class="text-orange text-strong"></span>${(empty param.p)?1:param.p} / ${LastNum} pages</div>
 			</div>
 
 			<div class="margin-top align-center pager">	
-	<c:set var="page" value="${(param.p == null)?1:param.p}" />
-	<c:set var="startNum" value="${page-(page-1)%5}" />
-	<c:set var="LastNum" value="23" />
 		
 	<div>
 	<c:if test="${startNum-5 > 0 }">
@@ -219,14 +222,16 @@
 	
 	<ul class="-list- center">
 		<c:forEach var="i" begin="0" end="4">
-		<li><a class="-text- orange bold" href="?p=${i+startNum}&t=&q=" >${i+startNum}</a></li>
+			<c:if test="${(i+startNum) <= LastNum }">
+				<li><a class="-text- ${(param.p == (i+startNum))?'orange':''} bold" href="?p=${i+startNum}&f=${param.f}&q=${param.q}" >${i+startNum}</a></li>
+			</c:if>
 		</c:forEach>
 	</ul>
 	<div>
-		<c:if test="${startNum+5 < LastNum}">
+		<c:if test="${startNum+4 < LastNum}">
 			<a href="?p=${5+startNum}&t=&q=" class="btn btn-next">다음</a>
 		</c:if>
-		<c:if test="${startNum+5 >= LastNum}">
+		<c:if test="${startNum+4 >= LastNum}">
 			<span class="btn btn-next" onclick="alert('다음 페이지가 없습니다.');">다음</span>
 		</c:if>
 	</div>
